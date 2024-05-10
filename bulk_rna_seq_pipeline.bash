@@ -14,11 +14,14 @@
 ############################## bulk rna-seq bash pipeline ###################################################
 # This code will carryout a basic bulk rna-seq analysis pipeline for all fastq files in the input repository
 # The pipeline is for use on a slurm hpc
+# The pipeline assumes fastq file have been merged used using the bash script on github
+# The plan going forward is to implement Ahringer pipelines in Nextflow so this will not be developed beyond a basic workflow.
 # Options include:
-#      threads = Not currently used
-#      path = Change the path of the input files
+#      threads = Will multi-thread any process to this number
+#      input = Change the path of the input fastq files
 #      id = Change the name of the output folder, the default is a datestamp
 #      holdinput = keep input files where they are
+#      mergeID = If the file names have been merged differently the input can be changed here 'Myfile_<Add the flag here>_R1/R2_001.fastq.gz'
 # Author Steve Walsh May 2024
 ##############################################################################################################
 
@@ -30,9 +33,17 @@ star_index=/mnt/home3/ahringer/sw2154/references/built_genomes/star/c.elegans.la
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 HOLDINPUT=false
+MERGEID=merged
+
+# Function to handle incorrect arguments
+function exit_with_bad_args {
+    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID> --holdinput --mergeID <merge ID> "
+    echo "Invalid arguments provided" >&2
+    exit # this stops the terminal closing when run as source
+}
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l path: -l id: -l holdinput: -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l threads: -l input: -l id: -l holdinput: -l mergeID -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -42,7 +53,7 @@ while true; do
             shift
             THREADS="$1"
             ;;
-        --path)
+        --input)
             shift
             fastq_dir="$1"
             ;;
@@ -54,6 +65,10 @@ while true; do
            HOLDINPUT="true"
            echo "Holding input fastq files in inputs folder"
            ;;
+        --mergeID)
+            shift
+            MERGEID="$1"
+            ;;
          --)
             shift
             break
@@ -74,7 +89,7 @@ declare -A FILES
 
 #Get all fastq names from input folder
 for f in *fastq.gz; do                  # search the files with the suffix
-    base=${f%_L001_*}                        # remove after "_L001_" To make sample ID the hash key
+    base=${f%_${MERGEID}_*}                        # remove after "_L001_" To make sample ID the hash key
     if [[ $f == $base* ]] && [[ $f == *"R1"* ]]; then    # if the variable is the current sample ID and is forward
         FILES[$base]=$f                  # then store the filename
     elif [[ $f == $base* ]] && [[ $f == *"R2"* ]]; then # if the variable is the current sample and is reverse
@@ -82,34 +97,20 @@ for f in *fastq.gz; do                  # search the files with the suffix
     fi
 done
 
-#THREADCOUNTER=0
-
-
 #Loops through the fastq names, make directories for their output and run fastqc
 for base in "${!FILES[@]}"; do 
-    echo "${base}_L001_R1_001.fastq.gz"
-    echo "${base}_L001_R2_001.fastq.gz"
+    echo "${base}_${MERGEID}_R1_001.fastq.gz"
+    echo "${base}_${MERGEID}_R2_001.fastq.gz"
 
     mkdir ${analysis_out_dir}/${base} 
     mkdir ${analysis_out_dir}/${base}/fastq
 
     cd ${analysis_out_dir}/${base}/fastq 
 
-    if [ $HOLDINPUT == "false" ]; then
-        mv $fastq_dir/${base}_L001_R*_001.fastq.gz .
-    else
-        cp $fastq_dir/${base}_L001_R*_001.fastq.gz .
-    fi
+    ln -s $fastq_dir/${base}_${MERGEID}_R*_001.fastq.gz .
 
-    fastqc ${base}_L001_R1_001.fastq.gz ${base}_L001_R2_001.fastq.gz &
+    #fastqc ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz
 
-#    $THREADCOUNTER = $(( $THREADCOUNTER + 1 ))
-#    if [ "$THREADCOUNTER" -ge "$THREADS" ]; then
-#        echo "Maximum number of pipelines are running ($THREADS), waiting for them to finish"
-#        wait
-#        unset COUNTER
-#        echo "Running the next group of pipelines now"
-#        COUNTER=0
-#    fi
+    #STAR --readFilesCommand zcat --runThreadN ${Threads} --genomeDir $star_index --readFilesIn ${base}_L001_${MERGEID}_001.fastq.gz ${base}_L001_${MERGEID}_001.fastq.gz --outFileNamePrefix $outdir_star --outSAMtype BAM SortedByCoordinate --outSAMattrIHstart 0 --outWigType wiggle --twopassMode Bas>
 
 done

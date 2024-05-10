@@ -1,14 +1,11 @@
 #!/bin/bash
 #
-#SBATCH --job-name=star_kallisto
-#SBATCH --output=slurm_out/star_kallisto.%N.%j.out
-#SBATCH --error=slurm_err/star_kallisto.%N.%j.err
+#TODO? SET UP SLURM OPTIONS FOR COMMAND LINE
+#SBATCH --job-name=Ahringer_bulk_rna-seq_bash_pipeline
 #SBATCH --ntasks=1
 #SBATCH -N 1
-#SBATCH -n 6
+#SBATCH -n 10
 #SBATCH --mem-per-cpu=4000
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=aft36@cam.ac.uk
 
 #############################################################################################################
 ############################## bulk rna-seq bash pipeline ###################################################
@@ -26,10 +23,10 @@
 ##############################################################################################################
 
 #Set the defaults
-outdir=/mnt/home3/ahringer/sw2154/out
-genome_chr=/mnt/home3/ahringer/sw2154/references/built_genomes/star/c.elegans.latest
-fastq_dir=/mnt/home3/ahringer/sw2154/data/
-star_index=/mnt/home3/ahringer/sw2154/references/built_genomes/star/c.elegans.latest
+outdir=~/out
+genome_chr=~/references/built_genomes/star/c.elegans.latest
+fastq_dir=~/data/
+star_index=~/references/built_genomes/star/c.elegans.latest
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 HOLDINPUT=false
@@ -104,12 +101,12 @@ for base in "${!FILES[@]}"; do
 
     mkdir ${analysis_out_dir}/${base} 
     mkdir ${analysis_out_dir}/${base}/fastq
-
-    cd ${analysis_out_dir}/${base}/fastq 
-
+    mkdir ${analysis_out_dir}/${base}/fastqc
+    cd ${analysis_out_dir}/${base}/fastq
     ln -s $fastq_dir/${base}_${MERGEID}_R*_001.fastq.gz .
 
-    #fastqc ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz
+    #Carry out fastqc
+    fastqc ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R2_001.fastq.gz --outdir ${analysis_out_dir}/${base}/fastqc
 
     #STAR --readFilesCommand zcat --runThreadN ${Threads} --genomeDir $star_index --readFilesIn ${base}_L001_${MERGEID}_001.fastq.gz ${base}_L001_${MERGEID}_001.fastq.gz --outFileNamePrefix $outdir_star --outSAMtype BAM SortedByCoordinate --outSAMattrIHstart 0 --outWigType wiggle --twopassMode Bas>
 

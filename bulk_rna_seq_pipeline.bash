@@ -102,12 +102,22 @@ for base in "${!FILES[@]}"; do
     mkdir ${analysis_out_dir}/${base} 
     mkdir ${analysis_out_dir}/${base}/fastq
     mkdir ${analysis_out_dir}/${base}/fastqc
+    mkdir ${analysis_out_dir}/${base}/star
     cd ${analysis_out_dir}/${base}/fastq
     ln -s $fastq_dir/${base}_${MERGEID}_R*_001.fastq.gz .
 
     #Carry out fastqc
-    fastqc ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R2_001.fastq.gz --outdir ${analysis_out_dir}/${base}/fastqc
+    #fastqc ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R2_001.fastq.gz \
+    #--outdir ${analysis_out_dir}/${base}/fastqc
 
-    #STAR --readFilesCommand zcat --runThreadN ${Threads} --genomeDir $star_index --readFilesIn ${base}_L001_${MERGEID}_001.fastq.gz ${base}_L001_${MERGEID}_001.fastq.gz --outFileNamePrefix $outdir_star --outSAMtype BAM SortedByCoordinate --outSAMattrIHstart 0 --outWigType wiggle --twopassMode Bas>
+    STAR --readFilesCommand zcat \
+    --runThreadN ${THREADS} \
+    --genomeDir $star_index \
+    --readFilesIn ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz \
+    --outFileNamePrefix ${analysis_out_dir}/${base}/star \
+    --outSAMtype BAM SortedByCoordinate \
+    --outSAMattrIHstart 0 \
+    --outWigType wiggle \
+    --twopassMode Basic
 
 done

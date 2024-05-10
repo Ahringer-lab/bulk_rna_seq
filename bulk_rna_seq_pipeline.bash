@@ -103,6 +103,7 @@ for base in "${!FILES[@]}"; do
     mkdir ${analysis_out_dir}/${base}/fastq
     mkdir ${analysis_out_dir}/${base}/fastqc
     mkdir ${analysis_out_dir}/${base}/star
+    mkdir ${analysis_out_dir}/${base}/kalisto
     cd ${analysis_out_dir}/${base}/fastq
     ln -s $fastq_dir/${base}_${MERGEID}_R*_001.fastq.gz .
 
@@ -119,5 +120,11 @@ for base in "${!FILES[@]}"; do
     --outSAMattrIHstart 0 \
     --outWigType wiggle \
     --twopassMode Basic
+
+   kallisto quant -i $kallisto_idx \
+   -b 100 \
+   -o ${analysis_out_dir}/${base}/kalisto \
+   -t 6 \
+   --rf-stranded ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz
 
 done

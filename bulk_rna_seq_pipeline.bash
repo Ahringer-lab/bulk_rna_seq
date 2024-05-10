@@ -115,16 +115,16 @@ for base in "${!FILES[@]}"; do
     --runThreadN ${THREADS} \
     --genomeDir $star_index \
     --readFilesIn ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz \
-    --outFileNamePrefix ${analysis_out_dir}/${base}/star \
+    --outFileNamePrefix ${analysis_out_dir}/${base}/star/ \
     --outSAMtype BAM SortedByCoordinate \
     --outSAMattrIHstart 0 \
     --outWigType wiggle \
     --twopassMode Basic
 
-   kallisto quant -i $kallisto_idx \
-   -b 100 \
-   -o ${analysis_out_dir}/${base}/kalisto \
-   -t 6 \
-   --rf-stranded ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz
+   #kallisto quant -i $kallisto_idx \
+   #-b 100 \
+   #-o ${analysis_out_dir}/${base}/kalisto \
+   #-t 6 \
+   #--rf-stranded ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz
 
 done

@@ -101,30 +101,36 @@ for base in "${!FILES[@]}"; do
 
     mkdir ${analysis_out_dir}/${base} 
     mkdir ${analysis_out_dir}/${base}/fastq
-    mkdir ${analysis_out_dir}/${base}/fastqc
+    mkdir ${analysis_out_dir}/${base}/trim_galore
+    trimmedfastq_dir=${analysis_out_dir}/${base}/trim_galore
     mkdir ${analysis_out_dir}/${base}/star
+    mkdir ${analysis_out_dir}/${base}/fastq_screen
     mkdir ${analysis_out_dir}/${base}/kalisto
     cd ${analysis_out_dir}/${base}/fastq
     ln -s $fastq_dir/${base}_${MERGEID}_R*_001.fastq.gz .
 
-    #Carry out fastqc
-    #fastqc ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R2_001.fastq.gz \
-    #--outdir ${analysis_out_dir}/${base}/fastqc
+    #Carry out trimgalore (includes fastqc)
+    trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R2_001.fastq.gz \
+    --outdir ${analysis_out_dir}/${base}/trim_galore
+
+    #Carry out fastq screen
+    fastq_screen ${trimmedfastq_dir}/*.fastq.gz  \
+    --outdir ${analysis_out_dir}/${base}/fastq_screen
 
     STAR --readFilesCommand zcat \
     --runThreadN ${THREADS} \
     --genomeDir $star_index \
-    --readFilesIn ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz \
+    --readFilesIn ${trimmedfastq_dir}/*.fastq.gz \
     --outFileNamePrefix ${analysis_out_dir}/${base}/star/ \
     --outSAMtype BAM SortedByCoordinate \
     --outSAMattrIHstart 0 \
     --outWigType wiggle \
     --twopassMode Basic
 
-   #kallisto quant -i $kallisto_idx \
-   #-b 100 \
-   #-o ${analysis_out_dir}/${base}/kalisto \
-   #-t 6 \
-   #--rf-stranded ${base}_${MERGEID}_R1_001.fastq.gz ${base}_${MERGEID}_R2_001.fastq.gz
+   kallisto quant -i $kallisto_idx \
+   -b 100 \
+   -o ${analysis_out_dir}/${base}/kalisto \
+   -t 6 \
+   --rf-stranded ${trimmedfastq_dir}/*.fastq.gz
 
 done

@@ -113,7 +113,7 @@ for base in "${!FILES[@]}"; do
     mkdir ${analysis_out_dir}/${base}/fastq_screen
     mkdir ${analysis_out_dir}/${base}/kallisto
     cd ${analysis_out_dir}/${base}/fastq
-    ln -s $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
+    cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 
     #Carry out trimgalore (includes fastqc)
     trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
@@ -130,7 +130,7 @@ for base in "${!FILES[@]}"; do
     STAR --readFilesCommand zcat \
     --runThreadN ${THREADS} \
     --genomeDir $star_index \
-    --readFilesIn ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \ 
+    --readFilesIn ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
     --outFileNamePrefix ${analysis_out_dir}/${base}/star/ \
     --outSAMtype BAM SortedByCoordinate \
     --outSAMattrIHstart 0 \

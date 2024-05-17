@@ -17,8 +17,10 @@
 #      threads = Will multi-thread any process to this number
 #      input = Change the path of the input fastq files
 #      id = Change the name of the output folder, the default is a datestamp
-#      holdinput = keep input files where they are
 #      mergeID = If the file names have been merged differently the input can be changed here 'Myfile_<Add the flag here>_R1/R2_001.fastq.gz'
+#      star_index = The location of the STAR index
+#      kallisto_index = The location of the Kallisto index
+# The scripts lacks logs, error handling and parallelisation (Beyond program specific multi-threading)
 # Author Steve Walsh May 2024
 ##############################################################################################################
 
@@ -29,18 +31,17 @@ fastq_dir=~/data/
 star_index=~/references/built_genomes/star/c.elegans.latest
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
-HOLDINPUT=false
 MERGEID=merged
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID> --holdinput --mergeID <merge ID> "
+    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --star_index --kallisto_index"
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l input: -l id: -l holdinput: -l mergeID -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -58,13 +59,17 @@ while true; do
             shift
             RUNID="$1"
             ;;
-        --holdinput)
-           HOLDINPUT="true"
-           echo "Holding input fastq files in inputs folder"
-           ;;
         --mergeID)
             shift
             MERGEID="$1"
+            ;;
+        --star_index)
+            shift
+            star_index="$1"
+            ;;
+        --kallisto_index)
+            shift
+            kallisto_index="$1"
             ;;
          --)
             shift
@@ -74,17 +79,18 @@ while true; do
     shift
 done
 
+#Set and create the ouput directory based on Run ID (Date/time if not set)
 analysis_out_dir=${outdir}/${RUNID}
 mkdir $analysis_out_dir
-
 echo "$analysis_out_dir"
 
+#Move to directory with fastq files
 cd $fastq_dir
 
 # Make array to store fastq name
 declare -A FILES
 
-#Get all fastq names from input folder
+#The for loop below will grab all fastq names from input folder
 for f in *fastq.gz; do                  # search the files with the suffix
     base=${f%${MERGEID}*}                        # remove after "_L001_" To make sample ID the hash key
     if [[ $f == $base* ]] && [[ $f == *"R1"* ]]; then    # if the variable is the current sample ID and is forward
@@ -94,8 +100,8 @@ for f in *fastq.gz; do                  # search the files with the suffix
     fi
 done
 
-#Loops through the fastq names, make directories for their output and run fastqc
-for base in "${!FILES[@]}"; do 
+#Loops through the fastq names, make directories for each output, ${base} holds the sample name
+for base in "${!FILES[@]}"; do
     echo "${base}${MERGEID}_R1_001.fastq.gz"
     echo "${base}${MERGEID}_R2_001.fastq.gz"
 
@@ -119,6 +125,7 @@ for base in "${!FILES[@]}"; do
     --outdir ${analysis_out_dir}/${base}/fastq_screen \
     --threads ${THREADS}
 
+    #Carry out STAR alignment
     #***N.B.*** Alignement carried out on un-trimmed reads due to the fussy nature of STAR with regard to it's input
     STAR --readFilesCommand zcat \
     --runThreadN ${THREADS} \
@@ -130,6 +137,7 @@ for base in "${!FILES[@]}"; do
     --outWigType wiggle \
     --twopassMode Basic
 
+    #Carry out Kallisto read quantification
     kallisto quant -i ${kallisto_index} \
     -b 100 \
     -o ${analysis_out_dir}/${base}/kallisto \

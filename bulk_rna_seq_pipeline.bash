@@ -109,12 +109,12 @@ for base in "${!FILES[@]}"; do
     cd ${analysis_out_dir}/${base}/fastq
     ln -s $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 
-    Carry out trimgalore (includes fastqc)
+    #Carry out trimgalore (includes fastqc)
     trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
     -o ${analysis_out_dir}/${base}/trim_galore \
     -j ${THREADS}
 
-    Carry out fastq screen
+    #Carry out fastq screen
     fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
     --outdir ${analysis_out_dir}/${base}/fastq_screen \
     --threads ${THREADS}

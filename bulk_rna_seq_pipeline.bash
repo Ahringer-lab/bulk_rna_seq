@@ -24,7 +24,7 @@
 
 #Set the defaults
 outdir=~/out
-genome_chr=~/references/built_genomes/star/c.elegans.latest
+kallisto_index=~/references/built_genomes/kallisto/c.elegans_full_transcripts.idx
 fastq_dir=~/data/
 star_index=~/references/built_genomes/star/c.elegans.latest
 THREADS=1
@@ -86,7 +86,7 @@ declare -A FILES
 
 #Get all fastq names from input folder
 for f in *fastq.gz; do                  # search the files with the suffix
-    base=${f%_${MERGEID}_*}                        # remove after "_L001_" To make sample ID the hash key
+    base=${f%${MERGEID}*}                        # remove after "_L001_" To make sample ID the hash key
     if [[ $f == $base* ]] && [[ $f == *"R1"* ]]; then    # if the variable is the current sample ID and is forward
         FILES[$base]=$f                  # then store the filename
     elif [[ $f == $base* ]] && [[ $f == *"R2"* ]]; then # if the variable is the current sample and is reverse
@@ -96,8 +96,8 @@ done
 
 #Loops through the fastq names, make directories for their output and run fastqc
 for base in "${!FILES[@]}"; do 
-    echo "${base}_${MERGEID}_R1_001.fastq.gz"
-    echo "${base}_${MERGEID}_R2_001.fastq.gz"
+    echo "${base}${MERGEID}_R1_001.fastq.gz"
+    echo "${base}${MERGEID}_R2_001.fastq.gz"
 
     mkdir ${analysis_out_dir}/${base} 
     mkdir ${analysis_out_dir}/${base}/fastq
@@ -105,32 +105,37 @@ for base in "${!FILES[@]}"; do
     trimmedfastq_dir=${analysis_out_dir}/${base}/trim_galore
     mkdir ${analysis_out_dir}/${base}/star
     mkdir ${analysis_out_dir}/${base}/fastq_screen
-    mkdir ${analysis_out_dir}/${base}/kalisto
+    mkdir ${analysis_out_dir}/${base}/kallisto
     cd ${analysis_out_dir}/${base}/fastq
-    ln -s $fastq_dir/${base}_${MERGEID}_R*_001.fastq.gz .
+    ln -s $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 
-    #Carry out trimgalore (includes fastqc)
-    trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}_${MERGEID}_R2_001.fastq.gz \
-    --outdir ${analysis_out_dir}/${base}/trim_galore
+    Carry out trimgalore (includes fastqc)
+    trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
+    -o ${analysis_out_dir}/${base}/trim_galore \
+    -j ${THREADS}
 
-    #Carry out fastq screen
-    fastq_screen ${trimmedfastq_dir}/*.fastq.gz  \
-    --outdir ${analysis_out_dir}/${base}/fastq_screen
+    Carry out fastq screen
+    fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
+    --outdir ${analysis_out_dir}/${base}/fastq_screen \
+    --threads ${THREADS}
 
+    #***N.B.*** Alignement carried out on un-trimmed reads due to the fussy nature of STAR with regard to it's input
     STAR --readFilesCommand zcat \
     --runThreadN ${THREADS} \
     --genomeDir $star_index \
-    --readFilesIn ${trimmedfastq_dir}/*.fastq.gz \
+    --readFilesIn ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \ 
     --outFileNamePrefix ${analysis_out_dir}/${base}/star/ \
     --outSAMtype BAM SortedByCoordinate \
     --outSAMattrIHstart 0 \
     --outWigType wiggle \
     --twopassMode Basic
 
-   kallisto quant -i $kallisto_idx \
-   -b 100 \
-   -o ${analysis_out_dir}/${base}/kalisto \
-   -t 6 \
-   --rf-stranded ${trimmedfastq_dir}/*.fastq.gz
+    kallisto quant -i ${kallisto_index} \
+    -b 100 \
+    -o ${analysis_out_dir}/${base}/kallisto \
+    -t 6 \
+    --rf-stranded \
+    ${trimmedfastq_dir}/${base}${MERGEID}_R*_001_trimmed.fq.gz \
+    --threads=${THREADS}
 
 done

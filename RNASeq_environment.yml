@@ -1,95 +1,75 @@
-name: base
+name: RNASeq
 channels:
   - bioconda
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=main
   - _openmp_mutex=5.1=1_gnu
-  - anaconda-anon-usage=0.4.4=py312hfc0e8ea_100
-  - archspec=0.2.3=pyhd3eb1b0_0
-  - boltons=23.0.0=py312h06a4308_0
-  - brotli-python=1.0.9=py312h6a678d5_7
-  - bzip2=1.0.8=h5eee18b_5
-  - c-ares=1.19.1=h5eee18b_0
+  - bowtie=1.2.3=py37hc9558a2_0
+  - bowtie2=2.3.5.1=py37he513fc3_0
+  - bz2file=0.98=py37h06a4308_1
+  - bzip2=1.0.8=h5eee18b_6
   - ca-certificates=2024.3.11=h06a4308_0
-  - certifi=2024.2.2=py312h06a4308_0
-  - cffi=1.16.0=py312h5eee18b_0
-  - charset-normalizer=2.0.4=pyhd3eb1b0_0
-  - conda=24.3.0=py312h06a4308_0
-  - conda-content-trust=0.2.0=py312h06a4308_0
-  - conda-libmamba-solver=24.1.0=pyhd3eb1b0_0
-  - conda-package-handling=2.2.0=py312h06a4308_0
-  - conda-package-streaming=0.9.0=py312h06a4308_0
-  - cryptography=42.0.5=py312hdda0065_0
+  - certifi=2022.12.7=py37h06a4308_0
+  - cutadapt=2.6=py37h516909a_0
   - dbus=1.13.18=hb2f20db_0
-  - distro=1.8.0=py312h06a4308_0
-  - expat=2.5.0=h6a678d5_0
+  - dnaio=0.3=py37h14c3975_1
+  - expat=2.6.2=h6a678d5_0
+  - fastq-screen=0.15.3=pl5321hdfd78af_0
   - fastqc=0.12.1=hdfd78af_0
-  - fmt=9.1.0=hdb19cb5_0
   - font-ttf-dejavu-sans-mono=2.37=hd3eb1b0_0
   - fontconfig=2.14.1=h4c34cd2_2
   - freetype=2.12.1=h4a9f257_0
   - gdbm=1.18=hd4cb3f1_4
+  - giflib=5.2.1=h5eee18b_3
   - glib=2.78.4=h6a678d5_0
   - glib-tools=2.78.4=h6a678d5_0
+  - hdf5=1.10.6=h3ffc7dd_1
   - icu=73.1=h6a678d5_0
-  - idna=3.4=py312h06a4308_0
-  - jsonpatch=1.33=py312h06a4308_0
-  - jsonpointer=2.1=pyhd3eb1b0_0
-  - krb5=1.20.1=h143b758_1
+  - jpeg=9e=h5eee18b_1
+  - kallisto=0.46.2=h60f4f9f_2
   - ld_impl_linux-64=2.38=h1181459_1
-  - libarchive=3.6.2=h6ac8c49_2
-  - libcurl=8.5.0=h251f7ec_0
-  - libedit=3.1.20230828=h5eee18b_0
-  - libev=4.33=h7f8727e_1
-  - libffi=3.4.4=h6a678d5_0
+  - lerc=3.0=h295c915_0
+  - libdeflate=1.17=h5eee18b_1
+  - libffi=3.4.4=h6a678d5_1
   - libgcc-ng=11.2.0=h1234567_1
+  - libgd=2.3.3=h6a678d5_3
+  - libgfortran-ng=11.2.0=h00389a5_1
+  - libgfortran5=11.2.0=h1234567_1
   - libglib=2.78.4=hdc74915_0
   - libgomp=11.2.0=h1234567_1
-  - libiconv=1.16=h7f8727e_2
-  - libmamba=1.5.8=hfe524e5_1
-  - libmambapy=1.5.8=py312h2dafd23_1
-  - libnghttp2=1.57.0=h2d74bed_0
+  - libiconv=1.16=h5eee18b_3
+  - libnsl=2.0.0=h5eee18b_0
   - libpng=1.6.39=h5eee18b_0
-  - libsolv=0.7.24=he621ea3_0
-  - libssh2=1.10.0=hdbd6064_2
   - libstdcxx-ng=11.2.0=h1234567_1
+  - libtiff=4.5.1=h6a678d5_0
   - libuuid=1.41.5=h5eee18b_0
+  - libwebp=1.2.4=h11a3e52_1
+  - libwebp-base=1.2.4=h5eee18b_1
   - libxcb=1.15=h7f8727e_0
-  - libxml2=2.10.4=hf1b16e4_1
-  - lz4-c=1.9.4=h6a678d5_0
-  - menuinst=2.0.2=py312h06a4308_0
+  - libxml2=2.10.4=hfdd30dd_2
+  - lz4-c=1.9.4=h6a678d5_1
   - ncurses=6.4=h6a678d5_0
   - openjdk=11.0.13=h87a67e3_0
-  - openssl=3.0.13=h7f8727e_0
-  - packaging=23.2=py312h06a4308_0
-  - pcre2=10.42=hebb0a14_0
-  - perl=5.34.0=h5eee18b_2
-  - pip=23.3.1=py312h06a4308_0
-  - platformdirs=3.10.0=py312h06a4308_0
-  - pluggy=1.0.0=py312h06a4308_1
-  - pybind11-abi=4=hd3eb1b0_1
-  - pycosat=0.6.6=py312h5eee18b_0
-  - pycparser=2.21=pyhd3eb1b0_0
-  - pysocks=1.7.1=py312h06a4308_0
-  - python=3.12.2=h996f2a0_0
+  - openssl=1.1.1w=h7f8727e_0
+  - pcre2=10.42=hebb0a14_1
+  - perl=5.32.1=0_h5eee18b_perl5
+  - perl-gd=2.56=0
+  - perl-gdgraph=1.54=pl5321hdfd78af_1
+  - perl-gdtextutil=0.86=pl5321hec16e2b_7
+  - pigz=2.6=h27cfd23_0
+  - pip=22.3.1=py37h06a4308_0
+  - python=3.7.16=h7a1cb2a_0
   - readline=8.2=h5eee18b_0
-  - reproc=14.2.4=h295c915_1
-  - reproc-cpp=14.2.4=h295c915_1
-  - requests=2.31.0=py312h06a4308_1
-  - ruamel.yaml=0.17.21=py312h5eee18b_0
-  - setuptools=68.2.2=py312h06a4308_0
-  - sqlite=3.41.2=h5eee18b_0
+  - setuptools=65.6.3=py37h06a4308_0
+  - sqlite=3.45.3=h5eee18b_0
   - star=2.7.10b=h9ee0642_0
-  - tk=8.6.12=h1ccaba5_0
-  - tqdm=4.65.0=py312he106c6f_0
-  - truststore=0.8.0=py312h06a4308_0
-  - tzdata=2024a=h04d1e81_0
-  - urllib3=2.1.0=py312h06a4308_1
-  - wheel=0.41.2=py312h06a4308_0
-  - xz=5.4.6=h5eee18b_0
-  - yaml-cpp=0.8.0=h6a678d5_0
-  - zlib=1.2.13=h5eee18b_0
-  - zstandard=0.19.0=py312h5eee18b_0
-  - zstd=1.5.5=hc292b87_0
-prefix: /mnt/home3/ahringer/sw2154/miniconda3
+  - tbb=2020.3=hfd86e86_0
+  - tk=8.6.14=h39e8969_0
+  - trim-galore=0.6.10=hdfd78af_0
+  - wheel=0.38.4=py37h06a4308_0
+  - xopen=0.7.3=py_0
+  - xz=5.4.6=h5eee18b_1
+  - zlib=1.2.13=h5eee18b_1
+  - zstd=1.5.5=hc292b87_2
+prefix: /mnt/home3/ahringer/sw2154/miniconda3/envs/RNASeq

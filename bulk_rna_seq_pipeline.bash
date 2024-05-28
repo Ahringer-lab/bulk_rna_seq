@@ -1,12 +1,11 @@
-#!/bin/bash
-#
-#TODO? SET UP SLURM OPTIONS FOR COMMAND LINE
+#!/bin/sh
 #SBATCH --job-name=Ahringer_bulk_rna-seq_bash_pipeline
 #SBATCH --ntasks=1
 #SBATCH -N 1
-#SBATCH -n 10
-#SBATCH --mem-per-cpu=4000
+#SBATCH --cpus-per-task=8
+#SBATCH --mem-per-cpu=8000
 
+#TODO? SET UP SLURM OPTIONS FOR COMMAND LINE
 #############################################################################################################
 ############################## bulk rna-seq bash pipeline ###################################################
 # This code will carryout a basic bulk rna-seq analysis pipeline for all fastq files in the input repository

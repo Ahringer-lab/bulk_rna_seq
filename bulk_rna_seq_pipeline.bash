@@ -139,4 +139,10 @@ for base in "${!FILES[@]}"; do
     ${trimmedfastq_dir}/${base}${MERGEID}_R*_001_trimmed.fq.gz \
     --threads=${THREADS}
 
+    #Re-name Kallisto ouput
+    cd ${analysis_out_dir}/${base}/kallisto
+    mv abundance.tsv ${base}abundance.tsv
+    mv abundance.h5 ${base}abundance.h5
+    mv run_info.json ${base}run_info.json
+
 done

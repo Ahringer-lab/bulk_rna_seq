@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #############################################################################################################
 ############################## bulk rna-seq bash pipeline ###################################################
@@ -22,6 +22,7 @@ outdir=~/out
 kallisto_index=~/references/built_genomes/kallisto/c.elegans_full_transcripts.idx
 fastq_dir=~/data/
 star_index=~/references/built_genomes/star/c.elegans.latest
+CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
@@ -120,6 +121,7 @@ for base in "${!FILES[@]}"; do
 
     #Carry out STAR alignment
     #***N.B.*** Alignement carried out on un-trimmed reads due to the fussy nature of STAR with regard to it's input
+    echo "Carrying out STAR alignment"
     STAR --readFilesCommand zcat \
     --runThreadN ${THREADS} \
     --genomeDir $star_index \
@@ -130,7 +132,15 @@ for base in "${!FILES[@]}"; do
     --outWigType wiggle \
     --twopassMode Basic
 
+    #Converts wigs to bigwigs
+    echo "Converting wigs to bw"
+    wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str1.bw
+    wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str2.bw
+    wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
+    wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
+
     #Carry out Kallisto read quantification
+    echo "Carrying out quantification with Kallisto"
     kallisto quant -i ${kallisto_index} \
     -b 100 \
     -o ${analysis_out_dir}/${base}/kallisto \

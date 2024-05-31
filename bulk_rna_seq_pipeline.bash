@@ -96,7 +96,7 @@ cd ${analysis_out_dir}/${base}/fastq
 cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 
 #Set up stats file
-STATSFILE=${analysis_out_dir}/stats/stats.csv
+STATSFILE=${analysis_out_dir}/stats/stats-${base}.csv
 echo \#Run ID,${RUNID} >> $STATSFILE
 echo \#Sample ID,${base} >> $STATSFILE
 

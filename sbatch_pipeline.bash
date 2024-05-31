@@ -88,5 +88,5 @@ for base in "${!FILES[@]}"; do
     echo "${base}${MERGEID}_R2_001.fastq.gz"
 
 cd ${WD}
-          srun bash bulk_rna_seq_pipeline.bash --fastqid ${base} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index}
+          srun bash bulk_rna_seq_pipeline.bash --fastqid ${base} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 done

@@ -26,6 +26,7 @@ CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.g
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
+STATSFILE=${analysis_out_dir}/stats.csv
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
@@ -79,7 +80,6 @@ done
 
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample name
-echo "HERE!!!!"
 echo "${base}${MERGEID}_R1_001.fastq.gz"
 echo "${base}${MERGEID}_R2_001.fastq.gz"
 
@@ -94,6 +94,14 @@ mkdir ${analysis_out_dir}/${base}/fastq_screen
 mkdir ${analysis_out_dir}/${base}/kallisto
 cd ${analysis_out_dir}/${base}/fastq
 cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
+
+#Set up stats file
+
+#Gather fastq read numbers and add to stats file
+R1count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R1_*.fastq.gz|wc -l)/4|bc ))
+R2count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R2_*.fastq.gz|wc -l)/4|bc ))
+echo Fastq-R1 , $R1count >> $STATSFILE
+echo Fastq-R2 , $R2count >> $STATSFILE
 
 #Carry out trimgalore (includes fastqc)
 trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
@@ -117,6 +125,12 @@ STAR --readFilesCommand zcat \
 --outSAMattrIHstart 0 \
 --outWigType wiggle \
 --twopassMode Basic
+
+#Add alignment stats to stats file
+ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/Aligned.sortedByCoord.out.bam)
+ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
+ALIGNEDNUMBER=$(head -n 1 <<< $ALIGNEDLIST)
+echo Aligned-reads , $ALIGNEDNUMBER >> $STATSFILE
 
 #Converts wigs to bigwigs
 echo "Converting wigs to bw"

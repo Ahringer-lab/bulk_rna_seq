@@ -29,18 +29,22 @@ MERGEID=merged
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --star_index --kallisto_index"
+    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --star_index --kallisto_index"
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l fastqid -l threads: -l input: -l id: -l mergeID -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
 while true; do
     case "$1" in
+        --fasqid)
+            shift
+            BASE="$1"
+            ;;
         --threads)
             shift
             THREADS="$1"
@@ -73,86 +77,64 @@ while true; do
     shift
 done
 
-#Set and create the ouput directory based on Run ID (Date/time if not set)
-analysis_out_dir=${outdir}/${RUNID}
-mkdir $analysis_out_dir
-echo "$analysis_out_dir"
-
-#Move to directory with fastq files
-cd $fastq_dir
-
-# Make array to store fastq name
-declare -A FILES
-
-#The for loop below will grab all fastq names from input folder
-for f in *fastq.gz; do                  # search the files with the suffix
-    base=${f%${MERGEID}*}                        # remove after "_L001_" To make sample ID the hash key
-    if [[ $f == $base* ]] && [[ $f == *"R1"* ]]; then    # if the variable is the current sample ID and is forward
-        FILES[$base]=$f                  # then store the filename
-    elif [[ $f == $base* ]] && [[ $f == *"R2"* ]]; then # if the variable is the current sample and is reverse
-        FILES[$base]+=" $f"
-    fi
-done
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample name
-for base in "${!FILES[@]}"; do
-    echo "${base}${MERGEID}_R1_001.fastq.gz"
-    echo "${base}${MERGEID}_R2_001.fastq.gz"
 
-    mkdir ${analysis_out_dir}/${base} 
-    mkdir ${analysis_out_dir}/${base}/fastq
-    mkdir ${analysis_out_dir}/${base}/trim_galore
-    trimmedfastq_dir=${analysis_out_dir}/${base}/trim_galore
-    mkdir ${analysis_out_dir}/${base}/star
-    mkdir ${analysis_out_dir}/${base}/fastq_screen
-    mkdir ${analysis_out_dir}/${base}/kallisto
-    cd ${analysis_out_dir}/${base}/fastq
-    cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
+echo "${base}${MERGEID}_R1_001.fastq.gz"
+echo "${base}${MERGEID}_R2_001.fastq.gz"
 
-    #Carry out trimgalore (includes fastqc)
-    trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
-    -o ${analysis_out_dir}/${base}/trim_galore \
-    -j ${THREADS}
+mkdir ${analysis_out_dir}/${base} 
+mkdir ${analysis_out_dir}/${base}/fastq
+mkdir ${analysis_out_dir}/${base}/trim_galore
+trimmedfastq_dir=${analysis_out_dir}/${base}/trim_galore
+mkdir ${analysis_out_dir}/${base}/star
+mkdir ${analysis_out_dir}/${base}/fastq_screen
+mkdir ${analysis_out_dir}/${base}/kallisto
+cd ${analysis_out_dir}/${base}/fastq
+cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 
-    #Carry out fastq screen
-    fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
-    --outdir ${analysis_out_dir}/${base}/fastq_screen \
-    --threads ${THREADS}
+#Carry out trimgalore (includes fastqc)
+trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
+-o ${analysis_out_dir}/${base}/trim_galore \
+-j ${THREADS}
 
-    #Carry out STAR alignment
-    #***N.B.*** Alignement carried out on un-trimmed reads due to the fussy nature of STAR with regard to it's input
-    echo "Carrying out STAR alignment"
-    STAR --readFilesCommand zcat \
-    --runThreadN ${THREADS} \
-    --genomeDir $star_index \
-    --readFilesIn ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
-    --outFileNamePrefix ${analysis_out_dir}/${base}/star/ \
-    --outSAMtype BAM SortedByCoordinate \
-    --outSAMattrIHstart 0 \
-    --outWigType wiggle \
-    --twopassMode Basic
+#Carry out fastq screen
+fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
+--outdir ${analysis_out_dir}/${base}/fastq_screen \
+--threads ${THREADS}
 
-    #Converts wigs to bigwigs
-    echo "Converting wigs to bw"
-    wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str1.bw
-    wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str2.bw
-    wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
-    wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
+#Carry out STAR alignment
+#***N.B.*** Alignement carried out on un-trimmed reads due to the fussy nature of STAR with regard to it's input
+echo "Carrying out STAR alignment"
+STAR --readFilesCommand zcat \
+--runThreadN ${THREADS} \
+--genomeDir $star_index \
+--readFilesIn ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
+--outFileNamePrefix ${analysis_out_dir}/${base}/star/ \
+--outSAMtype BAM SortedByCoordinate \
+--outSAMattrIHstart 0 \
+--outWigType wiggle \
+--twopassMode Basic
 
-    #Carry out Kallisto read quantification
-    echo "Carrying out quantification with Kallisto"
-    kallisto quant -i ${kallisto_index} \
-    -b 100 \
-    -o ${analysis_out_dir}/${base}/kallisto \
-    -t 6 \
-    --rf-stranded \
-    ${trimmedfastq_dir}/${base}${MERGEID}_R*_001_trimmed.fq.gz \
-    --threads=${THREADS}
+#Converts wigs to bigwigs
+echo "Converting wigs to bw"
+wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str1.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str2.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
 
-    #Re-name Kallisto ouput
-    cd ${analysis_out_dir}/${base}/kallisto
-    mv abundance.tsv ${base}abundance.tsv
-    mv abundance.h5 ${base}abundance.h5
-    mv run_info.json ${base}run_info.json
+#Carry out Kallisto read quantification
+echo "Carrying out quantification with Kallisto"
+kallisto quant -i ${kallisto_index} \
+-b 100 \
+-o ${analysis_out_dir}/${base}/kallisto \
+-t 6 \
+--rf-stranded \
+${trimmedfastq_dir}/${base}${MERGEID}_R*_001_trimmed.fq.gz \
+--threads=${THREADS}
 
-done
+#Re-name Kallisto ouput
+cd ${analysis_out_dir}/${base}/kallisto
+mv abundance.tsv ${base}abundance.tsv
+mv abundance.h5 ${base}abundance.h5
+mv run_info.json ${base}run_info.json

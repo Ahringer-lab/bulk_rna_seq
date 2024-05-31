@@ -104,7 +104,7 @@ echo ${base}, >> $STATSFILE
 R1count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R1_*.fastq.gz|wc -l)/4|bc ))
 R2count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R2_*.fastq.gz|wc -l)/4|bc ))
 echo ${R1count}, >> $STATSFILE
-echo ${R2count} >> $STATSFILE
+echo ${R2count}, >> $STATSFILE
 
 #Carry out trimgalore (includes fastqc)
 trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \

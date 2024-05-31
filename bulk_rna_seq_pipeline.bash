@@ -26,7 +26,6 @@ CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.g
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
-STATSFILE=${analysis_out_dir}/stats.csv
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
@@ -84,6 +83,7 @@ echo "${base}${MERGEID}_R1_001.fastq.gz"
 echo "${base}${MERGEID}_R2_001.fastq.gz"
 
 analysis_out_dir=${outdir}/${RUNID}
+STATSFILE=${analysis_out_dir}/stats.csv
 
 mkdir ${analysis_out_dir}/${base}
 mkdir ${analysis_out_dir}/${base}/fastq

@@ -83,6 +83,8 @@ echo "HERE!!!!"
 echo "${base}${MERGEID}_R1_001.fastq.gz"
 echo "${base}${MERGEID}_R2_001.fastq.gz"
 
+analysis_out_dir=${outdir}/${RUNID}
+
 mkdir ${analysis_out_dir}/${base}
 mkdir ${analysis_out_dir}/${base}/fastq
 mkdir ${analysis_out_dir}/${base}/trim_galore

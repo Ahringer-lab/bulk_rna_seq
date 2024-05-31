@@ -96,19 +96,19 @@ cd ${analysis_out_dir}/${base}/fastq
 cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 
 #Carry out trimgalore (includes fastqc)
-echo "trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
+trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
 -o ${analysis_out_dir}/${base}/trim_galore \
--j ${THREADS}"
+-j ${THREADS}
 
 #Carry out fastq screen
-echo "fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
+fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
 --outdir ${analysis_out_dir}/${base}/fastq_screen \
---threads ${THREADS}"
+--threads ${THREADS}
 
 #Carry out STAR alignment
 #***N.B.*** Alignement carried out on un-trimmed reads due to the fussy nature of STAR with regard to it's input
 echo "Carrying out STAR alignment"
-echo "STAR --readFilesCommand zcat \
+STAR --readFilesCommand zcat \
 --runThreadN ${THREADS} \
 --genomeDir $star_index \
 --readFilesIn ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
@@ -116,27 +116,27 @@ echo "STAR --readFilesCommand zcat \
 --outSAMtype BAM SortedByCoordinate \
 --outSAMattrIHstart 0 \
 --outWigType wiggle \
---twopassMode Basic"
+--twopassMode Basic
 
 #Converts wigs to bigwigs
 echo "Converting wigs to bw"
-echo "wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str1.bw"
-#wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str2.bw
-#wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
-#wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str1.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str2.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
 
 #Carry out Kallisto read quantification
 echo "Carrying out quantification with Kallisto"
-echo "kallisto quant -i ${kallisto_index} \
+kallisto quant -i ${kallisto_index} \
 -b 100 \
 -o ${analysis_out_dir}/${base}/kallisto \
 -t 6 \
 --rf-stranded \
 ${trimmedfastq_dir}/${base}${MERGEID}_R*_001_trimmed.fq.gz \
---threads=${THREADS}"
+--threads=${THREADS}
 
 #Re-name Kallisto ouput
-##cd ${analysis_out_dir}/${base}/kallisto
+cd ${analysis_out_dir}/${base}/kallisto
 mv abundance.tsv ${base}abundance.tsv
-#mv abundance.h5 ${base}abundance.h5
-#mv run_info.json ${base}run_info.json
+mv abundance.h5 ${base}abundance.h5
+mv run_info.json ${base}run_info.json

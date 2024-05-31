@@ -6,6 +6,23 @@
 #SBATCH --mem=8gb
 #SBATCH --output=pipeline_%j.log # Standard output and error log 
 
+#Set the defaults
+outdir=~/out
+kallisto_index=~/references/built_genomes/kallisto/c.elegans_full_transcripts.idx
+fastq_dir=~/data/
+star_index=~/references/built_genomes/star/c.elegans.latest
+CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
+THREADS=1
+RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
+MERGEID=merged
+
+# Function to handle incorrect arguments
+function exit_with_bad_args {
+    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --star_index --kallisto_index"
+    echo "Invalid arguments provided" >&2
+    exit # this stops the terminal closing when run as source
+}
+
 #Set the possible input options
 options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
 
@@ -44,6 +61,11 @@ while true; do
     esac
     shift
 done
+
+#Set and create the ouput directory based on Run ID (Date/time if not set)
+analysis_out_dir=${outdir}/${RUNID}
+mkdir $analysis_out_dir
+echo "$analysis_out_dir"
 
 cd ~/data
 MERGEID=merged

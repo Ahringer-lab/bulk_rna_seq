@@ -15,6 +15,7 @@ CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.g
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
+WD="$(pwd)"
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
@@ -67,9 +68,10 @@ analysis_out_dir=${outdir}/${RUNID}
 mkdir $analysis_out_dir
 echo "$analysis_out_dir"
 
-cd ~/data
 MERGEID=merged
 declare -A FILES
+
+cd ~/data
 
 for f in *fastq.gz; do                  # search the files with the suffix
     base=${f%${MERGEID}*}                        # remove after "_L001_" To make sample ID the hash key
@@ -85,5 +87,5 @@ for base in "${!FILES[@]}"; do
     echo "${base}${MERGEID}_R1_001.fastq.gz"
     echo "${base}${MERGEID}_R2_001.fastq.gz"
 
-            bash bulk_rna_seq_pipeline.bash --fasqid ${base} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index}
+          bash -x ${WD}/bulk_rna_seq_pipeline.bash --fastqid ${analysis_out_dir}/${base} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index}
 done

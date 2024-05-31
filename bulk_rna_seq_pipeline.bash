@@ -35,15 +35,15 @@ function exit_with_bad_args {
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l fastqid -l threads: -l input: -l id: -l mergeID -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l fastqid: -l threads: -l input: -l id: -l mergeID: -l star_index: -l kallisto_index: -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
 while true; do
     case "$1" in
-        --fasqid)
+        --fastqid)
             shift
-            BASE="$1"
+            base="$1"
             ;;
         --threads)
             shift
@@ -79,11 +79,11 @@ done
 
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample name
-
+echo "HERE!!!!"
 echo "${base}${MERGEID}_R1_001.fastq.gz"
 echo "${base}${MERGEID}_R2_001.fastq.gz"
 
-mkdir ${analysis_out_dir}/${base} 
+mkdir ${analysis_out_dir}/${base}
 mkdir ${analysis_out_dir}/${base}/fastq
 mkdir ${analysis_out_dir}/${base}/trim_galore
 trimmedfastq_dir=${analysis_out_dir}/${base}/trim_galore

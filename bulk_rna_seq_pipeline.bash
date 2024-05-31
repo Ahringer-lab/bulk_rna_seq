@@ -96,6 +96,9 @@ cd ${analysis_out_dir}/${base}/fastq
 cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 
 #Set up stats file
+STATSFILE=${analysis_out_dir}/stats/stats.csv
+echo \#Run ID,${RUNID} >> $STATSFILE
+echo \#Sample ID,${base} >> $STATSFILE
 
 #Gather fastq read numbers and add to stats file
 R1count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R1_*.fastq.gz|wc -l)/4|bc ))

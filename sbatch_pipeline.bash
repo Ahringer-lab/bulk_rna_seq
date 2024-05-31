@@ -68,9 +68,8 @@ analysis_out_dir=${outdir}/${RUNID}
 mkdir $analysis_out_dir
 echo "$analysis_out_dir"
 
-#Set up stats file
-STATSFILE=${analysis_out_dir}/stats.csv
-echo \#Run ID,${RUNID} >> $STATSFILE
+#Set up stats folder
+mkdir ${analysis_out_dir}/stats
 
 MERGEID=merged
 declare -A FILES

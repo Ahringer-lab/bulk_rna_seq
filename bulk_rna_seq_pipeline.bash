@@ -98,13 +98,13 @@ cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 #Set up stats file
 STATSFILE=${analysis_out_dir}/stats/stats-${base}.csv
 echo \#Run ID,${RUNID} >> $STATSFILE
-echo \#Sample ID,${base} >> $STATSFILE
+echo ${base}, >> $STATSFILE
 
 #Gather fastq read numbers and add to stats file
 R1count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R1_*.fastq.gz|wc -l)/4|bc ))
 R2count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R2_*.fastq.gz|wc -l)/4|bc ))
-echo Fastq-R1 , $R1count >> $STATSFILE
-echo Fastq-R2 , $R2count >> $STATSFILE
+echo ${R1count}, >> $STATSFILE
+echo ${R2count} >> $STATSFILE
 
 #Carry out trimgalore (includes fastqc)
 trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
@@ -133,7 +133,7 @@ STAR --readFilesCommand zcat \
 ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/Aligned.sortedByCoord.out.bam)
 ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
 ALIGNEDNUMBER=$(head -n 1 <<< $ALIGNEDLIST)
-echo Aligned-reads , $ALIGNEDNUMBER >> $STATSFILE
+echo ${ALIGNEDNUMBER}, >> $STATSFILE
 
 #Converts wigs to bigwigs
 echo "Converting wigs to bw"

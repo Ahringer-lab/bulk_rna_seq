@@ -93,3 +93,18 @@ for base in "${!FILES[@]}"; do
 cd ${WD}
           srun bash bulk_rna_seq_pipeline.bash --fastqid ${base} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 done
+
+cd analysis_out_dir=${outdir}/${RUNID}/stats
+
+echo \#Run ID\: ${RUNID} > summary_stats.txt
+echo -n Sample_name, >> summary_stats.txt
+awk 'FNR==2{printf $0 >> "summary_stats.txt"}' *
+echo "" >> summary_stats.txt
+echo -n Forward_fastq, >> summary_stats.txt
+awk 'FNR==3{printf $0 >> "summary_stats.txt"}' *
+echo "" >> summary_stats.txt
+echo -n Forward_fastq, >> summary_stats.txt
+awk 'FNR==4{printf $0 >> "summary_stats.txt"}' *
+echo "" >> summary_stats.txt
+echo -n Aligned_reads, >> summary_stats.txt
+awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *

@@ -1,21 +1,22 @@
 #!/bin/bash
 
-#############################################################################################################
-############################## bulk rna-seq bash pipeline ###################################################
-# This code will carryout a basic bulk rna-seq analysis pipeline for all fastq files in the input repository
-# The pipeline is for use on a slurm hpc
-# The pipeline assumes fastq file have been merged used using the bash script on github
+###############################################################################################################################################
+############################## bulk rna-seq bash pipeline #####################################################################################
+# This code will carryout a basic bulk rna-seq analysis pipeline for a pair of fastq files or pairs of fastq files fed from the sbatch script
+# The pipeline can be initiated on the HPC using srun or locally with bash
+# The pipeline assumes fastq file have been merged using the bash script on github
 # The plan going forward is to implement Ahringer pipelines in Nextflow so this will not be developed beyond a basic workflow.
 # Options include:
+#      fastqid = The fastq file id, i.e. the start of the standard file namme without _merged_L1/2_001.fastq.gz
 #      threads = Will multi-thread any process to this number
-#      input = Change the path of the input fastq files
+#      input = Change the path of the input fastq files, default is ~/data
 #      id = Change the name of the output folder, the default is a datestamp
-#      mergeID = If the file names have been merged differently the input can be changed here 'Myfile_<Add the flag here>_R1/R2_001.fastq.gz'
+#      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
 #      star_index = The location of the STAR index
 #      kallisto_index = The location of the Kallisto index
-# The scripts lacks logs, error handling and parallelisation (Beyond program specific multi-threading)
+# The scripts lacks logs and error handling
 # Author Steve Walsh May 2024
-##############################################################################################################
+################################################################################################################################################
 
 #Set the defaults
 outdir=~/out
@@ -78,13 +79,14 @@ while true; do
 done
 
 
-#Loops through the fastq names, make directories for each output, ${base} holds the sample name
+
 echo "${base}${MERGEID}_R1_001.fastq.gz"
 echo "${base}${MERGEID}_R2_001.fastq.gz"
 
 analysis_out_dir=${outdir}/${RUNID}
 STATSFILE=${analysis_out_dir}/stats.csv
 
+#Make the required output directories
 mkdir ${analysis_out_dir}/${base}
 mkdir ${analysis_out_dir}/${base}/fastq
 mkdir ${analysis_out_dir}/${base}/trim_galore

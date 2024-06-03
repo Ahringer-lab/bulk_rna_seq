@@ -4,7 +4,27 @@
 #SBATCH --ntasks=8
 #SBATCH --cpus-per-task=6 
 #SBATCH --mem=10gb
-#SBATCH --output=pipeline_%j.log # Standard output and error log 
+#SBATCH --output=pipeline_%j.log # Standard output and error log
+
+###############################################################################################################################################
+############################## bulk rna-seq sbatch job submission script ######################################################################
+# This code will gather all the fastq file names from the input folder into an array initiate pipeline runs for each one in the HPC
+# The pipeline assumes fastq file have been merged using the bash script on github
+# The fastq id is the first part of the standard file name afer merging e.g. for JAtab71-F-1_merged_R1_001.fastq.gz the id is JAtab71-F-1
+# The script creates a parent directory with the run ID, this is a date/time stamp unless specified as an option
+# The script will create a folder for each pair of fastq files with the fastq id as it's name within the parent folder
+# Remember to change the SBATCH options above to configure for your run, ntasks should be the number of fastq pairs
+# This script should only be run on the HPC using sbatch
+# Options include:
+#      threads = Will multi-thread any process to this number
+#      input = Change the path of the input fastq files, default is ~/data
+#      id = Change the name of the output folder, the default is a datestamp
+#      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
+#      star_index = The location of the STAR index
+#      kallisto_index = The location of the Kallisto index
+# Author Steve Walsh May 2024
+################################################################################################################################################
+
 
 #Set the defaults
 outdir=~/out
@@ -72,12 +92,15 @@ echo "$analysis_out_dir"
 mkdir ${analysis_out_dir}/stats
 
 MERGEID=_merged
+
+#Set up an array to store fastq file id's
 declare -A FILES
 
 cd ~/data
 
+# Gather the fastq files from the input folder and add to FILES array, the ID's are the hash key
 for f in *fastq.gz; do                  # search the files with the suffix
-    base=${f%${MERGEID}*}                        # remove after "_L001_" To make sample ID the hash key
+    base=${f%${MERGEID}*}                        # remove after "_MERGID_" To make sample ID the hash key
     if [[ $f == $base* ]] && [[ $f == *"R1"* ]]; then    # if the variable is the current sample ID and is forward
         FILES[$base]=$f                  # then store the filename
     elif [[ $f == $base* ]] && [[ $f == *"R2"* ]]; then # if the variable is the current sample and is reverse

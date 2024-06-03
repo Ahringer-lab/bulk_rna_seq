@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=Ahringer_RNA_seq  
+#SBATCH --job-name=RNASeq  
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4 
-#SBATCH --mem=8gb
+#SBATCH --ntasks=8
+#SBATCH --cpus-per-task=6 
+#SBATCH --mem=10gb
 #SBATCH --output=pipeline_%j.log # Standard output and error log 
 
 #Set the defaults
@@ -71,7 +71,7 @@ echo "$analysis_out_dir"
 #Set up stats folder
 mkdir ${analysis_out_dir}/stats
 
-MERGEID=merged
+MERGEID=_merged
 declare -A FILES
 
 cd ~/data
@@ -91,11 +91,18 @@ for base in "${!FILES[@]}"; do
     echo "${base}${MERGEID}_R2_001.fastq.gz"
 
 cd ${WD}
-          srun bash bulk_rna_seq_pipeline.bash --fastqid ${base} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
+          ./bulk_rna_seq_pipeline.bash --fastqid ${base} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 done
 
-cd analysis_out_dir=${outdir}/${RUNID}/stats
+#Wait for all pipelines to finish
+wait
 
+#Carry out multiqc across all samples
+cd ${analysis_out_dir}
+multiqc .
+
+#Make the summary stats file
+cd ${analysis_out_dir}/stats
 echo \#Run ID\: ${RUNID} > summary_stats.txt
 echo -n Sample_name, >> summary_stats.txt
 awk 'FNR==2{printf $0 >> "summary_stats.txt"}' *

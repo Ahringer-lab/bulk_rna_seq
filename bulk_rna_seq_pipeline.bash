@@ -100,6 +100,7 @@ cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
 #Set up stats file
 STATSFILE=${analysis_out_dir}/stats/stats-${base}.csv
 echo \#Run ID,${RUNID} >> $STATSFILE
+echo \# >> $STATSFILE
 echo ${base}, >> $STATSFILE
 
 #Gather fastq read numbers and add to stats file
@@ -125,24 +126,24 @@ STAR --readFilesCommand zcat \
 --runThreadN ${THREADS} \
 --genomeDir $star_index \
 --readFilesIn ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
---outFileNamePrefix ${analysis_out_dir}/${base}/star/ \
+--outFileNamePrefix ${analysis_out_dir}/${base}/star/${base}_ \
 --outSAMtype BAM SortedByCoordinate \
 --outSAMattrIHstart 0 \
 --outWigType wiggle \
 --twopassMode Basic
 
 #Add alignment stats to stats file
-ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/Aligned.sortedByCoord.out.bam)
+ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam)
 ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
 ALIGNEDNUMBER=$(head -n 1 <<< $ALIGNEDLIST)
 echo ${ALIGNEDNUMBER}, >> $STATSFILE
 
 #Converts wigs to bigwigs
 echo "Converting wigs to bw"
-wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str1.bw
-wigToBigWig ${analysis_out_dir}/${base}/star/Signal.UniqueMultiple.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str2.bw
-wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
-wigToBigWig ${analysis_out_dir}/${base}/star/Signal.Unique.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str1.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.UniqueMultiple.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str2.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.Unique.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
 
 #Carry out Kallisto read quantification
 echo "Carrying out quantification with Kallisto"
@@ -156,6 +157,6 @@ ${trimmedfastq_dir}/${base}${MERGEID}_R*_001_trimmed.fq.gz \
 
 #Re-name Kallisto ouput
 cd ${analysis_out_dir}/${base}/kallisto
-mv abundance.tsv ${base}abundance.tsv
-mv abundance.h5 ${base}abundance.h5
-mv run_info.json ${base}run_info.json
+mv abundance.tsv ${base}_abundance.tsv
+mv abundance.h5 ${base}_abundance.h5
+mv run_info.json ${base}_run_info.json

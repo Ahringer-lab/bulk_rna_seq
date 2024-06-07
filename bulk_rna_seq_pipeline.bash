@@ -132,6 +132,9 @@ STAR --readFilesCommand zcat \
 --outWigType wiggle \
 --twopassMode Basic
 
+#Index the bam file
+samtools index  ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam
+
 #Add alignment stats to stats file
 ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam)
 ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")

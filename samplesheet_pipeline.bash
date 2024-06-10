@@ -36,6 +36,7 @@ THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
 WD="$(pwd)"
+JOBS=1
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
@@ -96,6 +97,8 @@ MERGEID=_merged
 cd ${WD}
 
 INPUT="sample_sheet.csv"
+COUNTER=0
+
 while IFS= read -r LINE 
 do
 
@@ -113,28 +116,39 @@ do
     echo ${SAMPLE_NAME}
 
     ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
+
+    COUNTER=$(( COUNTER + 1 ))
+    echo $COUNTER
+    if [ "$COUNTER" -ge "$JOBS" ]; then
+        echo "Maximum number of pipelines are running ($JOBS), waiting for them to finish"
+        wait
+        unset COUNTER
+        echo "Running the next group of pipelines now"
+        COUNTER=0
+    fi
+    
 done < ${INPUT}
 
 #Wait for all pipelines to finish
 wait
 
-#Carry out multiqc across all samples
-#cd ${analysis_out_dir}
-#multiqc .
+Carry out multiqc across all samples
+#d ${analysis_out_dir}
+multiqc .
 
-#Make the summary stats file
-#cd ${analysis_out_dir}/stats
-#echo \#Run ID\: ${RUNID} > summary_stats.txt
-#echo -n Sample_name, >> summary_stats.txt
-#awk 'FNR==3{printf $0 >> "summary_stats.txt"}' *
-#echo "" >> summary_stats.txt
-#echo -n Forward_fastq, >> summary_stats.txt
-#awk 'FNR==4{printf $0 >> "summary_stats.txt"}' *
-#echo "" >> summary_stats.txt
-#echo -n Reverse_fastq, >> summary_stats.txt
-#awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *
-#echo "" >> summary_stats.txt
-#echo -n Aligned_reads, >> summary_stats.txt
-#awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
-#sed 's/.$//' summary_stats.txt >> summary_stats.csv
-#rm summary_stats.txt
+Make the summary stats file
+cd ${analysis_out_dir}/stats
+echo \#Run ID\: ${RUNID} > summary_stats.txt
+echo -n Sample_name, >> summary_stats.txt
+awk 'FNR==3{printf $0 >> "summary_stats.txt"}' *
+echo "" >> summary_stats.txt
+echo -n Forward_fastq, >> summary_stats.txt
+awk 'FNR==4{printf $0 >> "summary_stats.txt"}' *
+echo "" >> summary_stats.txt
+echo -n Reverse_fastq, >> summary_stats.txt
+awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *
+echo "" >> summary_stats.txt
+echo -n Aligned_reads, >> summary_stats.txt
+awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
+sed 's/.$//' summary_stats.txt >> summary_stats.csv
+rm summary_stats.txt

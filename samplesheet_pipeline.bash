@@ -93,9 +93,9 @@ mkdir ${analysis_out_dir}/stats
 
 MERGEID=_merged
 
-cd ~/data
+cd ${WD}
 
-INPUT="/Users/steve/bulk_rna_seq/sample_sheet.csv"
+INPUT="sample_sheet.csv"
 while IFS= read -r LINE 
 do
 
@@ -112,8 +112,7 @@ do
     echo "Sample ID being used"
     echo ${SAMPLE_NAME}
 
-cd ${WD}
-         ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
+    ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 done < ${INPUT}
 
 #Wait for all pipelines to finish

@@ -88,8 +88,8 @@ if [ ${base} = 'null' ]; then
     base=${FASTQ_ID}
 fi
 
-echo "${base}${MERGEID}_R1_001.fastq.gz"
-echo "${base}${MERGEID}_R2_001.fastq.gz"
+echo "${FASTQ_ID}${MERGEID}_R1_001.fastq.gz"
+echo "${FASTQ_ID}${MERGEID}_R2_001.fastq.gz"
 
 analysis_out_dir=${outdir}/${RUNID}
 STATSFILE=${analysis_out_dir}/stats.csv
@@ -103,7 +103,7 @@ mkdir ${analysis_out_dir}/${base}/star
 mkdir ${analysis_out_dir}/${base}/fastq_screen
 mkdir ${analysis_out_dir}/${base}/kallisto
 cd ${analysis_out_dir}/${base}/fastq
-cp $fastq_dir/${base}${MERGEID}_R*_001.fastq.gz .
+cp $fastq_dir/${FASTQ_ID}${MERGEID}_R*_001.fastq.gz .
 
 #Set up stats file
 STATSFILE=${analysis_out_dir}/stats/stats-${base}.csv
@@ -116,9 +116,9 @@ R1count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R1_*.fastq.gz|wc -l)/
 R2count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R2_*.fastq.gz|wc -l)/4|bc ))
 echo ${R1count}, >> $STATSFILE
 echo ${R2count}, >> $STATSFILE
-: '
+
 #Carry out trimgalore (includes fastqc)
-trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
+trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R2_001.fastq.gz \
 -o ${analysis_out_dir}/${base}/trim_galore \
 -j ${THREADS}
 
@@ -126,15 +126,15 @@ trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.
 fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
 --outdir ${analysis_out_dir}/${base}/fastq_screen \
 --threads ${THREADS}
-'
+
 #Carry out STAR alignment
 #***N.B.*** Alignement carried out on un-trimmed reads due to the fussy nature of STAR with regard to it's input
-: '
+
 echo "Carrying out STAR alignment"
 STAR --readFilesCommand zcat \
 --runThreadN ${THREADS} \
 --genomeDir $star_index \
---readFilesIn ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
+--readFilesIn ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R2_001.fastq.gz \
 --outFileNamePrefix ${analysis_out_dir}/${base}/star/${base}_ \
 --outSAMtype BAM SortedByCoordinate \
 --outSAMattrIHstart 0 \
@@ -146,9 +146,9 @@ samtools index  ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.o
 
 #Add alignment stats to stats file
 ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam)
-'
-#ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
-… '
+
+ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
+
 ALIGNEDNUMBER=$(head -n 1 <<< $ALIGNEDLIST)
 echo ${ALIGNEDNUMBER}, >> $STATSFILE
 
@@ -169,7 +169,7 @@ kallisto quant -i ${kallisto_index} \
 -o ${analysis_out_dir}/${base}/kallisto \
 -t 6 \
 --rf-stranded \
-${trimmedfastq_dir}/${base}${MERGEID}_R*_001_trimmed.fq.gz \
+${trimmedfastq_dir}/${FASTQ_ID}${MERGEID}_R*_001_trimmed.fq.gz \
 --threads=${THREADS}
 
 #Re-name Kallisto ouput
@@ -177,4 +177,4 @@ cd ${analysis_out_dir}/${base}/kallisto
 mv abundance.tsv ${base}_abundance.tsv
 mv abundance.h5 ${base}_abundance.h5
 mv run_info.json ${base}_run_info.json
-'
+

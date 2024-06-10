@@ -6,11 +6,13 @@
 #SBATCH --mem=25gb
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
-###############################################################################################################################################
-############################## bulk rna-seq sbatch job submission script ######################################################################
-# This code will gather all the fastq file names from the input folder into an array initiate pipeline runs for each one in the HPC
+##########################################################################################################################################################################
+############################## bulk rna-seq sbatch job submission script with a sample sheet #############################################################################
+# This code will gather all the fastq file names listed in the sample sheet from the input folder into an array to initiate pipeline runs for each one in the HPC
+# Using the sample sheet the output file and folders can be named differently to the fastq file names, this is useful if the fastq files have been named non-intuitively
 # The pipeline assumes fastq file have been merged using the bash script on github
 # The fastq id is the first part of the standard file name afer merging e.g. for JAtab71-F-1_merged_R1_001.fastq.gz the id is JAtab71-F-1
+# The sample ID can be set to whatever the user wants
 # The script creates a parent directory with the run ID, this is a date/time stamp unless specified as an option
 # The script will create a folder for each pair of fastq files with the fastq id as it's name within the parent folder
 # Remember to change the SBATCH options above to configure for your run, ntasks should be the number of fastq pairs
@@ -18,12 +20,13 @@
 # Options include:
 #      threads = Will multi-thread any process to this number
 #      input = Change the path of the input fastq files, default is ~/data
-#      id = Change the name of the output folder, the default is a datestamp
+#      id = Change the name of the parent pipeline output folder, the default is a datestamp
 #      mergeID = If the file names have been merged differently the input can be changed here 'fastqid_<Add the flag here>_R1/R2_001.fastq.gz'
+#      jobs = Changes the maximum number of jobs that are submitted to the cluster at once, this option should be used in conjunction with the slurm options above
 #      star_index = The location of the STAR index
 #      kallisto_index = The location of the Kallisto index
 # Author Steve Walsh May 2024
-################################################################################################################################################
+###########################################################################################################################################################################
 
 
 #Set the defaults
@@ -40,13 +43,13 @@ JOBS=1
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --star_index --kallisto_index"
+    echo "Usage: bash lane_merger.bash optional args: --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --jobs <Number of pairs of fastqs to run> --star_index --kallisto_index"
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l jobs: -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -67,6 +70,10 @@ while true; do
         --mergeID)
             shift
             MERGEID="$1"
+            ;;
+        --jobs)
+            shift
+            JOBS="$1"
             ;;
         --star_index)
             shift
@@ -96,19 +103,20 @@ MERGEID=_merged
 
 cd ${WD}
 
+#Set sample sheet name and a counter for number of jobs to be sent to the hpc at once
 INPUT="sample_sheet.csv"
 COUNTER=0
 
 while IFS= read -r LINE 
 do
 
-    # split line into array using tab delimitator - 0: sample 1: reference fasta 2: synDNA
+    # split line into array using tab delimitator - 0: FASTQ: FASTQ FILE SAMPLE_NAME: Name of sample (If changing from fastq file name)
     #echo ${var1}
     ARRAYLINE=(${LINE//,/ })
     FASTQ=${ARRAYLINE[0]}
     SAMPLE_NAME=${ARRAYLINE[1]}
 
-#Loops through the fastq names, make directories for each output, ${base} holds the sample name
+#Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
     echo "Fastq file being analysed"
     echo "${FASTQ}${MERGEID}_R1_001.fastq.gz"
     echo "${FASTQ}${MERGEID}_R2_001.fastq.gz"
@@ -117,6 +125,7 @@ do
 
     ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 
+    #Jobs are submitted to the hpc up to the upper job limit.
     COUNTER=$(( COUNTER + 1 ))
     echo $COUNTER
     if [ "$COUNTER" -ge "$JOBS" ]; then
@@ -126,14 +135,14 @@ do
         echo "Running the next group of pipelines now"
         COUNTER=0
     fi
-    
+
 done < ${INPUT}
 
 #Wait for all pipelines to finish
 wait
 
-Carry out multiqc across all samples
-#d ${analysis_out_dir}
+#Carry out multiqc across all samples
+cd ${analysis_out_dir}
 multiqc .
 
 Make the summary stats file

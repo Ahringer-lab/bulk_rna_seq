@@ -148,6 +148,9 @@ wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.UniqueMultiple.str2.
 wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
 wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.Unique.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
 
+mkdir ${analysis_out_dir}/${base}/star/${base}_bw
+mv ${analysis_out_dir}/${base}/star/*.bw ${analysis_out_dir}/${base}/star/${base}_bw
+
 #Carry out Kallisto read quantification
 echo "Carrying out quantification with Kallisto"
 kallisto quant -i ${kallisto_index} \

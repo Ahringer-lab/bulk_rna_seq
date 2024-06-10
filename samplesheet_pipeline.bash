@@ -83,13 +83,13 @@ while true; do
     shift
 done
 
-Set and create the ouput directory based on Run ID (Date/time if not set)
+#Set and create the ouput directory based on Run ID (Date/time if not set)
 analysis_out_dir=${outdir}/${RUNID}
 mkdir $analysis_out_dir
 echo "$analysis_out_dir"
 
 #Set up stats folder
-#mkdir ${analysis_out_dir}/stats
+mkdir ${analysis_out_dir}/stats
 
 MERGEID=_merged
 
@@ -112,33 +112,30 @@ do
     echo "Sample ID being used"
     echo ${SAMPLE_NAME}
 
-
-
-
 cd ${WD}
-         echo "./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &"
+         ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 done < ${INPUT}
 
 #Wait for all pipelines to finish
 wait
 
 #Carry out multiqc across all samples
-cd ${analysis_out_dir}
-multiqc .
+#cd ${analysis_out_dir}
+#multiqc .
 
 #Make the summary stats file
-cd ${analysis_out_dir}/stats
-echo \#Run ID\: ${RUNID} > summary_stats.txt
-echo -n Sample_name, >> summary_stats.txt
-awk 'FNR==3{printf $0 >> "summary_stats.txt"}' *
-echo "" >> summary_stats.txt
-echo -n Forward_fastq, >> summary_stats.txt
-awk 'FNR==4{printf $0 >> "summary_stats.txt"}' *
-echo "" >> summary_stats.txt
-echo -n Reverse_fastq, >> summary_stats.txt
-awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *
-echo "" >> summary_stats.txt
-echo -n Aligned_reads, >> summary_stats.txt
-awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
-sed 's/.$//' summary_stats.txt >> summary_stats.csv
-rm summary_stats.txt
+#cd ${analysis_out_dir}/stats
+#echo \#Run ID\: ${RUNID} > summary_stats.txt
+#echo -n Sample_name, >> summary_stats.txt
+#awk 'FNR==3{printf $0 >> "summary_stats.txt"}' *
+#echo "" >> summary_stats.txt
+#echo -n Forward_fastq, >> summary_stats.txt
+#awk 'FNR==4{printf $0 >> "summary_stats.txt"}' *
+#echo "" >> summary_stats.txt
+#echo -n Reverse_fastq, >> summary_stats.txt
+#awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *
+#echo "" >> summary_stats.txt
+#echo -n Aligned_reads, >> summary_stats.txt
+#awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
+#sed 's/.$//' summary_stats.txt >> summary_stats.csv
+#rm summary_stats.txt

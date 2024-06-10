@@ -27,22 +27,27 @@ CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.g
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
+base=null
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
-    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --star_index --kallisto_index"
+    echo "Usage: bash lane_merger.bash optional args: --fastqid <fastq suffix> --sample_id <sample_id> --threads <number of threads> --input <input path> --id <Run ID>  --mergeID <merge ID> --star_index --kallisto_index"
     echo "Invalid arguments provided" >&2
     exit # this stops the terminal closing when run as source
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l fastqid: -l threads: -l input: -l id: -l mergeID: -l star_index: -l kallisto_index: -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l fastqid: -l sample_id: -l threads: -l input: -l id: -l mergeID: -l star_index: -l kallisto_index: -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
 while true; do
     case "$1" in
         --fastqid)
+            shift
+            FASTQ_ID="$1"
+            ;;
+        --sample_id)
             shift
             base="$1"
             ;;
@@ -78,7 +83,10 @@ while true; do
     shift
 done
 
-
+if [ ${base} = 'null' ]; then
+    echo "No sample ID entered using fastq file name as ID"
+    base=${FASTQ_ID}
+fi
 
 echo "${base}${MERGEID}_R1_001.fastq.gz"
 echo "${base}${MERGEID}_R2_001.fastq.gz"
@@ -108,7 +116,7 @@ R1count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R1_*.fastq.gz|wc -l)/
 R2count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R2_*.fastq.gz|wc -l)/4|bc ))
 echo ${R1count}, >> $STATSFILE
 echo ${R2count}, >> $STATSFILE
-
+: '
 #Carry out trimgalore (includes fastqc)
 trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R2_001.fastq.gz \
 -o ${analysis_out_dir}/${base}/trim_galore \
@@ -118,9 +126,10 @@ trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${base}${MERGEID}_R1_001.
 fastq_screen ${trimmedfastq_dir}/*.fq.gz  \
 --outdir ${analysis_out_dir}/${base}/fastq_screen \
 --threads ${THREADS}
-
+'
 #Carry out STAR alignment
 #***N.B.*** Alignement carried out on un-trimmed reads due to the fussy nature of STAR with regard to it's input
+: '
 echo "Carrying out STAR alignment"
 STAR --readFilesCommand zcat \
 --runThreadN ${THREADS} \
@@ -137,7 +146,9 @@ samtools index  ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.o
 
 #Add alignment stats to stats file
 ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam)
-ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
+'
+#ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
+… '
 ALIGNEDNUMBER=$(head -n 1 <<< $ALIGNEDLIST)
 echo ${ALIGNEDNUMBER}, >> $STATSFILE
 
@@ -166,3 +177,4 @@ cd ${analysis_out_dir}/${base}/kallisto
 mv abundance.tsv ${base}_abundance.tsv
 mv abundance.h5 ${base}_abundance.h5
 mv run_info.json ${base}_run_info.json
+'

@@ -164,5 +164,7 @@ awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *
 echo "" >> summary_stats.txt
 echo -n Aligned_reads, >> summary_stats.txt
 awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
+echo "" >> summary_stats.txt
+awk 'FNR==7{printf $0 >> "summary_stats.txt"}' *
 sed 's/.$//' summary_stats.txt >> summary_stats.csv
 rm summary_stats.txt

@@ -144,23 +144,27 @@ STAR --readFilesCommand zcat \
 --twopassMode Basic
 
 #Filter to q30 reads
-samtools view -q 30 -b -h ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam > ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.q30.bam
+#samtools view -q 30 -b -h ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam > ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.q30.bam
 
 #Index the bam file
 samtools index  ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam
-samtools index  ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.q30.bam
+#samtools index  ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.q30.bam
 
 #Add alignment stats to stats file
 ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam)
-Q30ALIGNEDREADS=$(samtools flagstat ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.q30.bam)
+Q30ALIGNEDREADS=$(samtools view -q 30 ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam | wc -l )
+Q10ALIGNEDREADS=$(samtools view -q 10 ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam | wc -l )
 
 ALIGNEDLIST=$(awk '{print $1;}' <<< "$ALIGNEDREADS")
 Q30ALIGNEDREADSLIST=$(awk '{print $1;}' <<< "$Q30ALIGNEDREADS")
+Q10ALIGNEDREADSLIST=$(awk '{print $1;}' <<< "$Q10ALIGNEDREADS")
 
 ALIGNEDNUMBER=$(head -n 1 <<< $ALIGNEDLIST)
-Q30ALIGNEDNUMBER==$(head -n 1 <<< $Q30ALIGNEDREADSLIST)
+Q30ALIGNEDNUMBER=$(head -n 1 <<< $Q30ALIGNEDREADSLIST)
+Q10ALIGNEDNUMBER=$(head -n 1 <<< $Q10ALIGNEDREADSLIST)
 echo ${ALIGNEDNUMBER}, >> $STATSFILE
 echo ${Q30ALIGNEDNUMBER}, >> $STATSFILE
+echo ${Q10ALIGNEDREADS}, >> $STATSFILE
 
 #Converts wigs to bigwigs
 echo "Converting wigs to bw"

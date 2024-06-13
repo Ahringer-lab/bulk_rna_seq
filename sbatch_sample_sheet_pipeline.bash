@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=RNASeq  
-#SBATCH --nodes=1
-#SBATCH --ntasks=4
+#SBATCH --nodes=6
+#SBATCH --ntasks=30
 #SBATCH --cpus-per-task=20
-#SBATCH --mem=50gb
+#SBATCH --mem=100gb
 #SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
@@ -165,6 +165,10 @@ echo "" >> summary_stats.txt
 echo -n Aligned_reads, >> summary_stats.txt
 awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
 echo "" >> summary_stats.txt
+echo -n Q30_Aligned_reads, >> summary_stats.txt
 awk 'FNR==7{printf $0 >> "summary_stats.txt"}' *
+echo "" >> summary_stats.txt
+echo -n Q10_Aligned_reads, >> summary_stats.txt
+awk 'FNR==8{printf $0 >> "summary_stats.txt"}' *
 sed 's/.$//' summary_stats.txt >> summary_stats.csv
 rm summary_stats.txt

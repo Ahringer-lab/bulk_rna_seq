@@ -1,9 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=RNASeq  
 #SBATCH --nodes=1
-#SBATCH --ntasks=2
-#SBATCH --cpus-per-task=6 
-#SBATCH --mem=25gb
+#SBATCH --ntasks=4
+#SBATCH --cpus-per-task=20
+#SBATCH --mem=50gb
+#SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
 ##########################################################################################################################################################################
@@ -28,6 +29,7 @@
 # Author Steve Walsh May 2024
 ###########################################################################################################################################################################
 
+set -x
 
 #Set the defaults
 outdir=~/out
@@ -105,6 +107,9 @@ cd ${WD}
 
 #Set sample sheet name and a counter for number of jobs to be sent to the hpc at once
 INPUT="sample_sheet.csv"
+sed -i '/^[[:space:]]*$/d' $INPUT
+sed -i 's/\r$//' $INPUT
+
 COUNTER=0
 
 while IFS= read -r LINE 
@@ -123,7 +128,7 @@ do
     echo "Sample ID being used"
     echo ${SAMPLE_NAME}
 
-    ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
+    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 
     #Jobs are submitted to the hpc up to the upper job limit.
     COUNTER=$(( COUNTER + 1 ))

@@ -86,6 +86,8 @@ done
 if [ ${base} = 'null' ]; then
     echo "No sample ID entered using fastq file name as ID"
     base=${FASTQ_ID}
+else
+    base=${FASTQ_ID}_${base}
 fi
 
 echo "${FASTQ_ID}${MERGEID}_R1_001.fastq.gz"

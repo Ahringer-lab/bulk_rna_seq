@@ -179,7 +179,8 @@ awk 'FNR==9{printf $0 >> "summary_stats.txt"}' *
 echo "" >> summary_stats.txt
 echo -n Q10_Aligned_reads, >> summary_stats.txt
 awk 'FNR==10{printf $0 >> "summary_stats.txt"}' *
-sed 's/.$//' summary_stats.txt >> summary_stats.csv
+echo "" >> summary_stats.txt
 echo -n Q10_Aligned_percentage, >> summary_stats.txt
 awk 'FNR==11{printf $0 >> "summary_stats.txt"}' *
+sed 's/.$//' summary_stats.txt >> summary_stats.csv
 rm summary_stats.txt

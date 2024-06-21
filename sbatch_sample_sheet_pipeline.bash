@@ -112,6 +112,9 @@ sed -i 's/\r$//' $INPUT
 
 COUNTER=0
 
+#Copy the sample sheet over to ouput directory to keep track of file name updates
+cp ${INPUT} ${analysis_out_dir}/Sample_name_updates_${RUNID}.log
+
 while IFS= read -r LINE 
 do
 

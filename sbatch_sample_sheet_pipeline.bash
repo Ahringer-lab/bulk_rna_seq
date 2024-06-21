@@ -165,10 +165,10 @@ echo -n Forward_fastq, >> summary_stats.txt
 awk 'FNR==4{printf $0 >> "summary_stats.txt"}' *
 echo "" >> summary_stats.txt
 echo -n Reversqe_fastq, >> summary_stats.txt
-awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
+awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *
 echo "" >> summary_stats.txt
 echo -n Aligned_reads, >> summary_stats.txt
-awk 'FNR==5{printf $0 >> "summary_stats.txt"}' *
+awk 'FNR==6{printf $0 >> "summary_stats.txt"}' *
 echo "" >> summary_stats.txt
 echo -n Aligned_percentage, >> summary_stats.txt
 awk 'FNR==7{printf $0 >> "summary_stats.txt"}' *

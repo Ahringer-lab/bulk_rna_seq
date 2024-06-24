@@ -138,7 +138,5 @@ cd ${analysis_out_dir}
 multiqc .
 
 #Make the summary stats file
-#The Awk gets the N line from each text file in folder, i.e the individual stat files, the summary stats file is one line behind, so this line number doesn't exist
-#The final sed removes the last line and creates the final csv file
-
+cd ${WD}
 srun --nodes=1 --mem=5000MB --cpus-per-task=6 --ntasks=1 ./stats.bash --input ${analysis_out_dir} --id ${RUNID}

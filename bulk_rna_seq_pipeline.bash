@@ -113,6 +113,13 @@ echo \#Run ID,${RUNID} >> $STATSFILE
 echo \# >> $STATSFILE
 echo ${base}, >> $STATSFILE
 
+# Echo out what is being analysed
+echo "Fastq file being analysed"
+echo "${FASTQ_ID}${MERGEID}_R1_001.fastq.gz"
+echo "${FASTQ_ID}${MERGEID}_R2_001.fastq.gz"
+echo "Sample ID being used"
+echo "${base}"
+
 #Gather fastq read numbers and add to stats file
 R1count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R1_*.fastq.gz|wc -l)/4|bc ))
 R2count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R2_*.fastq.gz|wc -l)/4|bc ))

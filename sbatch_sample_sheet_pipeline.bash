@@ -110,8 +110,6 @@ INPUT="sample_sheet.csv"
 sed -i '/^[[:space:]]*$/d' $INPUT
 sed -i 's/\r$//' $INPUT
 
-COUNTER=0
-
 #Copy the sample sheet over to ouput directory to keep track of file name updates
 cp ${INPUT} ${analysis_out_dir}/Sample_sheet_${RUNID}.log
 
@@ -125,24 +123,8 @@ do
     SAMPLE_NAME=${ARRAYLINE[1]}
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
-    echo "Fastq file being analysed"
-    echo "${FASTQ}${MERGEID}_R1_001.fastq.gz"
-    echo "${FASTQ}${MERGEID}_R2_001.fastq.gz"
-    echo "Sample ID being used"
-    echo ${SAMPLE_NAME}
 
     srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
-
-    #Jobs are submitted to the hpc up to the upper job limit.
-    COUNTER=$(( COUNTER + 1 ))
-    echo $COUNTER
-    if [ "$COUNTER" -ge "$JOBS" ]; then
-        echo "Maximum number of pipelines are running ($JOBS), waiting for them to finish"
-        wait
-        unset COUNTER
-        echo "Running the next group of pipelines now"
-        COUNTER=0
-    fi
 
 done < ${INPUT}
 

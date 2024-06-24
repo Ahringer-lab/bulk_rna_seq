@@ -3,7 +3,6 @@
 #SBATCH --nodes=6
 #SBATCH --ntasks=30
 #SBATCH --cpus-per-task=20
-#SBATCH --mem=100gb
 #SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
@@ -128,8 +127,6 @@ do
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
 
     srun --nodes=1 --mem=10000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
-
-    COUNTER=$(( COUNTER + 1 ))
 
 done < ${INPUT}
 

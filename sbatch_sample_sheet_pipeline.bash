@@ -121,15 +121,13 @@ do
     FASTQ=${ARRAYLINE[0]}
     SAMPLE_NAME=${ARRAYLINE[1]}
 
-    if [ "$COUNTER" -ge "$JOBS" ]; then
-        wait
-        unset COUNTER
-        COUNTER=0
-    fi
+    while [ "$(jobs -p | wc -l)" -ge "$SLURM_NTASKS" ]; do
+        sleep 30
+    done
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
 
-    srun --nodes=6 --mem=10000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
+    srun --nodes=1 --mem=10000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 
     COUNTER=$(( COUNTER + 1 ))
 
@@ -146,4 +144,4 @@ multiqc .
 #The Awk gets the N line from each text file in folder, i.e the individual stat files, the summary stats file is one line behind, so this line number doesn't exist
 #The final sed removes the last line and creates the final csv file
 
-srun ./stats.bash ${analysis_out_dir} ${RUNID}
+srun --nodes=1 --mem=5000MB --cpus-per-task=6 --ntasks=1 ./stats.bash ${analysis_out_dir} ${RUNID}

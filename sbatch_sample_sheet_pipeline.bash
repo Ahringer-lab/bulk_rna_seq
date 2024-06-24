@@ -96,7 +96,6 @@ done
 #Set and create the ouput directory based on Run ID (Date/time if not set)
 analysis_out_dir=${outdir}/${RUNID}
 mkdir $analysis_out_dir
-echo "$analysis_out_dir"
 
 #Set up stats folder
 mkdir ${analysis_out_dir}/stats
@@ -122,9 +121,17 @@ do
     FASTQ=${ARRAYLINE[0]}
     SAMPLE_NAME=${ARRAYLINE[1]}
 
+    if [ "$COUNTER" -ge "$JOBS" ]; then
+        wait
+        unset COUNTER
+        COUNTER=0
+    fi
+
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
 
-    srun --mem=10000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
+    srun --nodes=6 --mem=10000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
+
+    COUNTER=$(( COUNTER + 1 ))
 
 done < ${INPUT}
 

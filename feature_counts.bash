@@ -87,7 +87,7 @@ do
     mkdir ${analysis_out_dir}/Feature_counts/${BAM_FILE}
     cd ${analysis_out_dir}/Feature_counts/${BAM_FILE}
 
-    srun featureCounts -p -O -T ${THREADS} -a ${GTF_FILE} -o featureCounts_${BAM_FILE} &
+    srun featureCounts -p -O -T ${THREADS} -a ${GTF_FILE} -o featureCounts_${BAM_FILE} ${bam_dir}/${BAM_FILE}_Aligned.sortedByCoord.out.bam.bai &
 
 done < ${INPUT}
 

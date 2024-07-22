@@ -20,7 +20,7 @@
 
 #Set the defaults
 outdir=~/out
-kallisto_index=~/references/built_genomes/kallisto/c.elegans_full_transcripts.idx
+kallisto_index=/mnt/home3/ahringer/index_files/built_indexes/kallisto/c.elegans.full.april2024
 fastq_dir=~/data/
 star_index=~/references/built_genomes/star/c.elegans.latest
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
@@ -28,6 +28,7 @@ THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
 base=null
+kallisto=false
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
@@ -126,6 +127,8 @@ R2count=$(( $(gunzip -c ${analysis_out_dir}/${base}/fastq/*R2_*.fastq.gz|wc -l)/
 echo ${R1count}, >> $STATSFILE
 echo ${R2count}, >> $STATSFILE
 
+if [ ${Kallisto} != 'true' ]; then
+
 #Carry out trimgalore (includes fastqc)
 trim_galore --fastqc ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R1_001.fastq.gz ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R2_001.fastq.gz \
 -o ${analysis_out_dir}/${base}/trim_galore \
@@ -152,7 +155,7 @@ STAR --readFilesCommand zcat \
 
 #Filter to q30 reads
 #samtools view -q 30 -b -h ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam > ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.q30.bam
-
+	
 #Index the bam file
 samtools index  ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.bam
 #samtools index  ${analysis_out_dir}/${base}/star/${base}_Aligned.sortedByCoord.out.q30.bam
@@ -189,6 +192,8 @@ wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.Unique.str2.out.wig 
 mkdir ${analysis_out_dir}/${base}/star/${base}_bw
 mv ${analysis_out_dir}/${base}/star/*.bw ${analysis_out_dir}/${base}/star/${base}_bw
 
+fi
+
 #Carry out Kallisto read quantification
 echo "Carrying out quantification with Kallisto"
 kallisto quant -i ${kallisto_index} \
@@ -196,7 +201,8 @@ kallisto quant -i ${kallisto_index} \
 -o ${analysis_out_dir}/${base}/kallisto \
 -t 6 \
 --rf-stranded \
-${trimmedfastq_dir}/${FASTQ_ID}${MERGEID}_R*_001_trimmed.fq.gz \
+${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R*_001.fastq.gz \
+#${trimmedfastq_dir}/${FASTQ_ID}${MERGEID}_R*_001_trimmed.fq.gz \
 --threads=${THREADS}
 
 #Re-name Kallisto ouput

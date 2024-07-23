@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=RNASeq  
-#SBATCH --nodes=6
-#SBATCH --ntasks=30
-#SBATCH --cpus-per-task=20
+#SBATCH --nodes=1
+#SBATCH --ntasks=25
+#SBATCH --cpus-per-task=10
 #SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
@@ -38,7 +38,7 @@ star_index=~/references/built_genomes/star/c.elegans.latest
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
-MERGEID=merged
+MERGEID=_merged
 WD="$(pwd)"
 JOBS=1
 
@@ -50,7 +50,7 @@ function exit_with_bad_args {
 }
 
 #Set the possible input options
-options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID -l jobs: -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
+options=$(getopt -o '' -l threads: -l input: -l id: -l mergeID: -l jobs: -l star_index -l kallisto_index -- "$@") || exit_with_bad_args
 
 #Get the inputs
 eval set -- "$options"
@@ -99,7 +99,7 @@ mkdir $analysis_out_dir
 #Set up stats folder
 mkdir ${analysis_out_dir}/stats
 
-MERGEID=_merged
+#MERGEID=_merged
 
 cd ${WD}
 

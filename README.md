@@ -61,3 +61,4 @@ There are several additional 'mini' pipelines in the repository including:
 * feature_counts.bash : This is simply to use feature counts to count against bam files, it is initiated in a similar way to the main pipeline but with sample_sheet_fc.csv instead of sample_sheet.csv
 * htseq.bash : This is simply to use htseq to count against bam files, it also uses sample_sheet_fc.csv and runs like feature_counts.bash
 * sbatch_pipeline.bash : This is a variant of the main pipeline that simply collects all the pairs of fastq files from the input directory with the defaul input file path <my_fastq>_merged_R1/2_001.fastq.gz. There is no option to update ouput file names with this pipeline.
+* stats.bash : This is used to summarise all the individual stats file generated for each sample

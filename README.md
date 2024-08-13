@@ -25,7 +25,7 @@ in the second column list any updates you want to make to the output file names.
 
 Once the sample_sheet.csv file is ready fun the pipeline with the following command:
 
-sbatch sbatch_main_pipeline.bash
+sbatch sbatch_main_RNAseq_pipeline.bash
 
 *Note: You may have to change the Slurm cluster settings at the top of sbatch_pipeline.bash depending on how many files you are analysing and how busy the cluster is.
 

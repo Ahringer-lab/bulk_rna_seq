@@ -17,10 +17,12 @@
 # The scripts lacks logs and error handling
 # Author Steve Walsh May 2024
 ################################################################################################################################################
+set -x
 
 #Set the defaults
 outdir=~/out
 kallisto_index=/mnt/home3/ahringer/index_files/built_indexes/kallisto/c.elegans.full.april2024
+gtf=/mnt/home3/ahringer/index_files/annotation_files/c.elegans.PRJNA13758.WS285_cannonical/c_elegans.PRJNA13758.WS285.canonical_geneset.gtf
 fastq_dir=~/data/
 star_index=~/references/built_genomes/star/c.elegans.latest
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
@@ -28,7 +30,7 @@ THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"
 MERGEID=merged
 base=null
-kallisto=false
+kallisto=true
 
 # Function to handle incorrect arguments
 function exit_with_bad_args {
@@ -184,7 +186,7 @@ echo ${Q10PERCENTAGE}, >> $STATSFILE
 
 #Converts wigs to bigwigs
 echo "Converting wigs to bw"
-wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str1.bw
+wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.UniqueMultiple.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${$base}.UniqueMultiple.str1.bw
 wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.UniqueMultiple.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.UniqueMultiple.str2.bw
 wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.Unique.str1.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str1.bw
 wigToBigWig ${analysis_out_dir}/${base}/star/${base}_Signal.Unique.str2.out.wig ${CHROM_SIZES} ${analysis_out_dir}/${base}/star/${base}.Unique.str2.bw
@@ -202,7 +204,6 @@ kallisto quant -i ${kallisto_index} \
 -t 6 \
 --rf-stranded \
 ${analysis_out_dir}/${base}/fastq/${FASTQ_ID}${MERGEID}_R*_001.fastq.gz \
-#${trimmedfastq_dir}/${FASTQ_ID}${MERGEID}_R*_001_trimmed.fq.gz \
 --threads=${THREADS}
 
 #Re-name Kallisto ouput

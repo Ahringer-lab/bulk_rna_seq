@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=CHIPseq
+#SBATCH --job-name=HTSeq
 #SBATCH --nodes=1
-#SBATCH --ntasks=20
-#SBATCH --cpus-per-task=12
-#SBATCH --mem=50gb
+#SBATCH --ntasks=30
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=40gb
 #SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
@@ -87,7 +87,7 @@ do
     mkdir ${analysis_out_dir}/htseq/${BAM_FILE}
     cd ${analysis_out_dir}/htseq/${BAM_FILE}
 
-    srun htseq-count --format bam ${bam_dir}/${BAM_FILE}_Aligned.sortedByCoord.out.bam ${GTF_FILE} > htseq_${BAM_FILE}.txt &
+    srun /mnt/home3/ahringer/sw2154/miniconda3/envs/HT-Seq/bin/htseq-count -c htseq_${BAM_FILE}.csv -t exon -i gene_id --mode union --nonunique random -s reverse ${bam_dir}/${BAM_FILE}_Aligned.sortedByCoord.out.bam ${GTF_FILE} &
 
 done < ${INPUT}
 

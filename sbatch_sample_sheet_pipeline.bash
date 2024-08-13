@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=RNASeq  
 #SBATCH --nodes=1
-#SBATCH --ntasks=25
-#SBATCH --cpus-per-task=10
+#SBATCH --ntasks=10
+#SBATCH --cpus-per-task=2
 #SBATCH --partition=2004
 #SBATCH --output=pipeline_%j.log # Standard output and error log
 
@@ -32,7 +32,7 @@ set -x
 
 #Set the defaults
 outdir=~/out
-kallisto_index=~/references/built_genomes/kallisto/c.elegans_full_transcripts.idx
+kallisto_index=/mnt/home3/ahringer/index_files/built_indexes/kallisto/c.elegans.full.april2024/c_elegans.PRJNA13758.WS285.canonical_geneset.idx
 fastq_dir=~/data/
 star_index=~/references/built_genomes/star/c.elegans.latest
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
@@ -126,7 +126,7 @@ do
 
 #Loops through the fastq names, make directories for each output, ${base} holds the sample id (TODO Chane $base to something else)
 
-    srun --nodes=1 --mem=17000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
+    srun --mem=17000MB --cpus-per-task=6 --ntasks=1 ./bulk_rna_seq_pipeline.bash --fastqid ${FASTQ} --sample_id ${SAMPLE_NAME} --threads ${THREADS} --input ${fastq_dir} --id ${RUNID} --mergeID ${MERGEID} --star_index ${star_index} --kallisto_index ${kallisto_index} &
 
 done < ${INPUT}
 
@@ -139,4 +139,4 @@ multiqc .
 
 #Make the summary stats file
 cd ${WD}
-srun --nodes=1 --mem=5000MB --cpus-per-task=6 --ntasks=1 ./stats.bash --input ${analysis_out_dir} --id ${RUNID}
+srun --mem=5000MB --cpus-per-task=6 --ntasks=1 ./stats.bash --input ${analysis_out_dir} --id ${RUNID}

@@ -28,9 +28,9 @@
 
 #Set the defaults
 outdir=~/out
-kallisto_index=~/references/built_genomes/kallisto/c.elegans_full_transcripts.idx
+kallisto_index=/mnt/home3/ahringer/index_files/built_indexes/kallisto/c.elegans.full.april2024/c_elegans.PRJNA13758.WS285.canonical_geneset.g.idx
 fastq_dir=~/data/
-star_index=~/references/built_genomes/star/c.elegans.latest
+star_index=/mnt/home3/ahringer/index_files/built_indexes/star/c.elegans.full.2024/
 CHROM_SIZES=/mnt/home3/ahringer/index_files/genomes/c_elegans.PRJNA13758.WS285.genomic.chrom.sizes
 THREADS=1
 RUNID="PipelineRun-$(date '+%Y-%m-%d-%R')"

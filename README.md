@@ -2,7 +2,7 @@
 
 The scripts within this repository can be used to carry at the majority of the analysis for a RNA-seq experiment. The main pipeline 'sbatch_main_RNAseq_pipeline.bash' will carry out the primary analysis including; QC of fastq files, aligment to the c.elegans transcriptome using Star, conversion of wiggle figs to bw and quantification using Kallisto. Background to the anlaysis process can be found within this confluence page https://ahringer-lab.atlassian.net/wiki/spaces/BG/pages/33412/Bulk+RNA+Sequencing.
 
-Once the  main pipeline has been run the RMarkdown script RNA-Seq_Analysis.Rmd can then be used to carry out the majoirty of the downstream analyisis. This code is broken down into chunks to make it easier to follow, simply change the inputs locations at the top, complete the samples sheet then if the chunks are run onsecutively it should ouput several figures along with DE genes. N.B you will also have to change the contrasts so they match what is in the sample sheet.
+Once the  main pipeline has been run the RMarkdown script RNA-Seq_Analysis.Rmd can then be used to carry out the majoirty of the downstream analyisis. This code is broken down into chunks to make it easier to follow, simply change the inputs locations at the top, complete the sample sheet then if the chunks are run onsecutively it should ouput several figures along with DE gene list to the ouput directory. N.B you will also have to change the contrasts so they match what is in the sample sheet.
 
 
 ### Install

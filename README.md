@@ -7,13 +7,15 @@ Once the  main pipeline has been run the RMarkdown script RNA-Seq_Analysis.Rmd c
 
 ### Install
 
-To use these pipelines first clone the repository into your home directory on the cluster.
+To use these pipelines first clone the repository into your home directory on the cluster as follows:
+
+git clone https://github.com/Ahringer-lab/bulk_rna_seq.git
 
 Then create two directories in your home directory:
 
-* Data
+* data
 
-* Out
+* out
 
 Finally clone the conda environment as below:
 

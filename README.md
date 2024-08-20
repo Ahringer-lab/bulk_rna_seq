@@ -56,6 +56,8 @@ The following flags can be used to change the behaviour of the pipeline:
 
 --kallisto_index : Change the dedault location of the star index from /mnt/home3/ahringer/index_files/built_indexes/kallisto/c.elegans.full.april2024/c_elegans.PRJNA13758.WS285.canonical_geneset.g.idx
 
+N.B Indexes for both STAR and Kallisto are built from the c.elegans.PRJNA13758.WS285_cannonical gtf file from Wormbase
+
 ### Output
 
 All files will be ouput to the out directory in your home directory, there will be a folder for each sample that contains the following folders:
